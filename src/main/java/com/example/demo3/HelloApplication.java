@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.NumberStringConverter;
 
 
+import javax.swing.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Date;
@@ -32,8 +33,9 @@ public class HelloApplication extends Application {
             primaryStage.setTitle("Kalkulator");
 
             GridPane glownyBorderPane = new GridPane();
+            glownyBorderPane.setHgap(1);
 
-            Scene scene = new Scene(glownyBorderPane, 200, 600);
+            Scene scene = new Scene(glownyBorderPane, 200, 500);
 
             GridPane UpgridPane = new GridPane();
             GridPane MidgridPane = new GridPane();
@@ -41,10 +43,10 @@ public class HelloApplication extends Application {
 
             glownyBorderPane.add(UpgridPane, 0, 0);
             glownyBorderPane.setMargin(UpgridPane, new Insets(0, 15, 15, 0));
-            glownyBorderPane.add(MidgridPane, 0, 2);
+            glownyBorderPane.add(MidgridPane, 0, 1);
             glownyBorderPane.setMargin(MidgridPane, new Insets(0, 15, 15, 0));
             glownyBorderPane.add(DowngridPane, 0, 4);
-            glownyBorderPane.setMargin(DowngridPane, new Insets(0, 15, 0, 0));
+            glownyBorderPane.setMargin(DowngridPane, new Insets(15, 15, 0, 0));
 
             Label CMethod = new Label();
             CMethod.setGraphic(new Label("Metoda Obliczeń: "));
@@ -70,16 +72,55 @@ public class HelloApplication extends Application {
             ToggleGroup CMethods = new ToggleGroup();
 
             Text NumText = new Text("Wartość bazowa:");   TextField NumField = new TextField();
-            NumField.setTextFormatter(new TextFormatter<>(new NumberStringConverter()));
             Text VatText = new Text("Stawka Vat:");
             ChoiceBox<String> VatBox = new ChoiceBox<String> (
                     FXCollections.observableArrayList(
                             "5%", "23%"
                     ));
 
-            Text RNettoText = new Text("Netto:"); Text RNettoNum = new Text("8");
-            Text RVatText = new Text("Vat:"); Text RVatNum = new Text("8");
-            Text RBruttoText = new Text("Brutto:"); Text RBruttoNum = new Text("8");
+            Button ob = new Button("OBLICZ");
+            ob.setMinWidth(100);
+            Button zb = new Button("zamknij");
+            zb.setMinWidth(100);
+
+
+            Text RNettoText = new Text("Netto:"); Text RNettoNum = new Text("0");
+            Text RVatText = new Text("Vat:"); Text RVatNum = new Text("0");
+            Text RBruttoText = new Text("Brutto:"); Text RBruttoNum = new Text("0");
+
+            EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
+                    public void handle(ActionEvent e)
+                    {
+                            double Netto = 0;
+                            double Brutto = 0;
+                            double VatVal = 0;
+                            RadioButton sbutton = (RadioButton)CMethods.getSelectedToggle();
+                            double Vat = VatBox.getValue().equals("23%") ? 23 / 100.0 : 5 / 100.0;
+                            double CalcVal = Integer.parseInt(NumField.getText());
+                            if (sbutton.getText() == "od Brutto do Netto"){
+                                    Brutto = CalcVal;
+                                    Netto = CalcVal * (1 - Vat);
+                                    VatVal = CalcVal * Vat;
+                            }
+                            else if (sbutton.getText() == "od Netto do Brutto") {
+                                    Brutto = CalcVal * (1 + Vat);
+                                    Netto = CalcVal;
+                                    VatVal = CalcVal * Vat;
+                            }
+                            else if(sbutton.getText() == "Dopasuj do kwoty Vat"){
+                                    Brutto = CalcVal / Vat + CalcVal;
+                                    Netto = CalcVal / Vat;
+                                    VatVal = CalcVal;
+                            }
+                            else {
+                                    System.out.println("nie wybrano radiobutton");
+                            }
+                            RNettoNum.setText(String.valueOf(Math.floor(Netto * 100) / 100));
+                            RVatNum.setText(String.valueOf(Math.floor(VatVal * 100) / 100) + " @ " + VatBox.getValue());
+                            RBruttoNum.setText(String.valueOf(Math.floor(Brutto * 100) / 100));
+                    }
+            };
+            ob.setOnAction(event);
 
             NtB.setToggleGroup(CMethods);
             BtN.setToggleGroup(CMethods);
@@ -104,10 +145,14 @@ public class HelloApplication extends Application {
             MidgridPane.setLayoutY(200);
             MidgridPane.setMinSize(BorderWidth, 50);
 
+            glownyBorderPane.add(zb, 1, 2);
+            glownyBorderPane.add(ob, 0,2);
+            glownyBorderPane.setMargin(zb, new Insets(0, 0, 0, -115));
+
             DowngridPane.setPadding(new Insets(15));
             DowngridPane.setLayoutX(100);
             DowngridPane.setLayoutY(300);
-            DowngridPane.setMinSize(BorderWidth, 50);
+            DowngridPane.setMinSize(BorderWidth, 150);
 
             UpgridPane.add(NtB, 0, 0);
             UpgridPane.add(BtN, 0, 1);
@@ -140,7 +185,7 @@ public class HelloApplication extends Application {
             MidgridPane .setStyle("-fx-border-width: 1;");
             MidgridPane .setStyle("-fx-border-insets: 1;");
             MidgridPane .setStyle("-fx-border-radius: 1;");
-            MidgridPane .setStyle("-fx-border-color: black;");
+            MidgridPane .setStyle("-fx-border-color: gray;");
 
             DowngridPane .setStyle("-fx-border-style: solid inside;");
             DowngridPane .setStyle("-fx-border-width: 1;");
@@ -150,7 +195,7 @@ public class HelloApplication extends Application {
 
             primaryStage.setScene(scene);
             primaryStage.setMinHeight(250);
-            primaryStage.setMinWidth(400);
+            primaryStage.setMinWidth(390);
             primaryStage.show();
     }
 
